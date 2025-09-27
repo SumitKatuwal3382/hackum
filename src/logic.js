@@ -23,7 +23,14 @@ export function weakestConcepts(studentId, n = 3, { weaknesses = seedWeaknesses,
 }
 
 export function conceptResources(conceptId, n = 2, { resources = seedResources } = {}) {
-  return resources.filter((r) => r.concept_id === conceptId).slice(0, n);
+  return resources
+    .filter((r) => r.concept_id === conceptId)
+    .sort((a, b) => {
+      // primary: lower difficulty first, secondary: higher rating first
+      if ((a.difficulty || 3) !== (b.difficulty || 3)) return (a.difficulty || 3) - (b.difficulty || 3);
+      return (b.rating || 0) - (a.rating || 0);
+    })
+    .slice(0, n);
 }
 
 export function peerMatches(studentId, targetConceptIds, n = 3, { weaknesses = seedWeaknesses, students = seedStudents, concepts = seedConcepts } = {}) {

@@ -57,16 +57,16 @@ export default function StudentOnboarding({ onCreated, onCancel }) {
 
       <div className="grid md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">Full Name</label>
-          <input value={name} onChange={e=>setName(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Jane Doe" />
+          <label htmlFor="fullName" className="block text-xs font-medium text-gray-600 mb-1">Full Name</label>
+          <input id="fullName" value={name} onChange={e=>setName(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Jane Doe" />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">Major</label>
-          <input value={major} onChange={e=>setMajor(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
+          <label htmlFor="major" className="block text-xs font-medium text-gray-600 mb-1">Major</label>
+          <input id="major" value={major} onChange={e=>setMajor(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">GPA</label>
-            <input type="number" step="0.01" min="0" max="4" value={gpa} onChange={e=>setGpa(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
+          <label htmlFor="gpa" className="block text-xs font-medium text-gray-600 mb-1">GPA</label>
+            <input id="gpa" type="number" step="0.01" min="0" max="4" value={gpa} onChange={e=>setGpa(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
         </div>
       </div>
 
@@ -100,7 +100,7 @@ export default function StudentOnboarding({ onCreated, onCancel }) {
                 <div key={w.concept_id} className="flex items-center gap-3 text-xs">
                   <span className="w-32 text-gray-700 truncate">{concept.name}</span>
                   <input type="range" min={0} max={1} step={0.01} value={w.mastery} onChange={e=>updateMastery(w.concept_id, e.target.value)} className="flex-1" />
-                  <span className="tabular-nums text-gray-600 w-10 text-right">{w.mastery.toFixed(2)}</span>
+                  <span className="tabular-nums text-gray-600 w-12 text-right">{(1 + w.mastery * 9).toFixed(1)}/10</span>
                 </div>
               );
             })}

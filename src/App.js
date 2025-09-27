@@ -1,12 +1,19 @@
 import React, { useState, useMemo } from "react";
 import { dayOrder } from "./data";
 import { weakestConcepts, nextFreeSlot, peerMatches, enrolledCourses, conceptResources } from "./logic";
+import { predictMastery } from "./ml/masteryPredictor";
+import { scoreResource } from "./ml/resourceRanker";
 import Card from "./components/Card";
 import Badge from "./components/Badge";
 import GraphMini from "./components/GraphMini";
 import Legend from "./components/Legend";
 import StudentOnboarding from "./components/StudentOnboarding";
 import { useData } from "./store";
+import CoursePie from "./components/CoursePie";
+import PeerInsights from "./components/PeerInsights";
+// Removed QueryPlayground (Neo4j/query feature disabled)
+import AIPlanner from "./components/AIPlanner";
+import ConceptSearch from "./components/ConceptSearch";
 
 export default function App() {
   const { students, enrollments, weaknesses, availability, courses, concepts, courseConcepts, resources } = useData();
@@ -21,6 +28,9 @@ export default function App() {
   const targetConceptIds = weak.map((w) => w.concept_id);
   const peers = useMemo(() => selectedStudent ? peerMatches(selectedStudent, targetConceptIds, 3, { weaknesses, students, concepts }) : [], [selectedStudent, targetConceptIds, weaknesses, students, concepts]);
   const enrolled = useMemo(() => selectedStudent ? enrolledCourses(selectedStudent, { enrollments, courses }) : [], [selectedStudent, enrollments, courses]);
+
+  // helper to format mastery (stored 0-1) as 1-10 scale for display
+  const formatMastery = (m) => (m == null ? '-' : (1 + m * 9).toFixed(1));
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-6">
@@ -114,27 +124,51 @@ export default function App() {
               </div>
             )}
 
-            {weak.map((w) => (
-              <div key={w.concept_id} className="p-4 rounded-xl border border-gray-100 bg-gray-50 mb-2">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-gray-900 font-medium">
-                    Concept: {w.concept.name} <span className="text-gray-500">({w.concept_id})</span>
+            {weak.map((w) => {
+              const proj = predictMastery(w.mastery || 0, {});
+              const projDisplay = (1 + (proj.projected)*9).toFixed(1);
+              return (
+                <div key={w.concept_id} className="p-4 rounded-xl border border-gray-100 bg-gray-50 mb-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-gray-900 font-medium">
+                      Concept: {w.concept.name} <span className="text-gray-500">({w.concept_id})</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge>now {formatMastery(w.mastery)}/10</Badge>
+                      <Badge>proj {projDisplay}/10</Badge>
+                    </div>
                   </div>
-                  <Badge>mastery {w.mastery.toFixed(2)}</Badge>
-                </div>
                 <div className="text-sm text-gray-700 mb-2">Resources</div>
-                <ul className="list-disc pl-5 space-y-1">
-                  {conceptResources(w.concept_id, 2, { resources }).map((r) => (
-                    <li key={r.id}>
-                      <a href={r.url} target="_blank" rel="noreferrer" className="text-blue-700 hover:underline">
-                        {r.type}
-                      </a>
-                      {r.duration && <span className="text-gray-500"> • {r.duration} min</span>}
-                    </li>
-                  ))}
+                <ul className="space-y-1">
+                  {conceptResources(w.concept_id, 3, { resources }).map((r) => {
+                    const fit = scoreResource(r, { mastery: w.mastery, targetDifficulty: 2 + (w.mastery<0.5?0:1) });
+                    return (
+                      <li key={r.id} className="flex items-start gap-2 text-xs">
+                        <div className="flex-1 min-w-0">
+                          <a href={r.url} target="_blank" rel="noreferrer" className="text-blue-700 hover:underline font-medium">
+                            {r.type.charAt(0).toUpperCase()+r.type.slice(1)}
+                          </a>
+                          <span className="text-gray-500"> • {r.duration}m</span>
+                          <div className="mt-0.5 flex flex-wrap gap-1 items-center">
+                            <span className="px-1.5 py-0.5 rounded-md bg-green-50 text-green-700">Fit {fit}</span>
+                            {r.difficulty && (
+                              <span className="px-1.5 py-0.5 rounded-md bg-gray-200 text-gray-700">D{r.difficulty}</span>
+                            )}
+                            {r.rating && (
+                              <span className="px-1.5 py-0.5 rounded-md bg-yellow-100 text-yellow-800">★ {r.rating.toFixed(1)}</span>
+                            )}
+                            {r.tags && r.tags.slice(0,2).map(t => (
+                              <span key={t} className="px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-600">{t}</span>
+                            ))}
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
-            ))}
+              );
+            })}
           </Card>
 
           <Card title="🧠 Why these? (Graph neighborhood)">
@@ -166,12 +200,16 @@ export default function App() {
                         <div className="font-medium text-gray-900">{p.student.name}</div>
                         <div className="text-gray-600 text-sm">Also weak in {p.concept.name}</div>
                       </div>
-                      <Badge>mastery {p.mastery.toFixed(2)}</Badge>
+                      <Badge>mastery {formatMastery(p.mastery)}/10</Badge>
                     </div>
                   </li>
                 ))}
               </ul>
             )}
+          </Card>
+
+          <Card title="🤝 Peer Insights (Prototype)">
+            <PeerInsights studentId={selectedStudent} students={students} enrollments={enrollments} />
           </Card>
 
           <Card title="📘 Enrolled Courses">
@@ -185,6 +223,32 @@ export default function App() {
                 </li>
               ))}
             </ul>
+          </Card>
+
+          <Card title="📊 Course Load Breakdown">
+            {selectedStudent ? (
+              <CoursePie
+                studentId={selectedStudent}
+                enrollments={enrollments}
+                courses={courses}
+                courseConcepts={courseConcepts}
+                weaknesses={weaknesses}
+                concepts={concepts}
+              />
+            ) : (
+              <p className="text-gray-500 text-sm">Select a student to view course distribution.</p>
+            )}
+            <p className="mt-4 text-[11px] text-gray-500 leading-snug">
+              Slice size = concept count in course. Color = grade (red low → green high). Tooltip shows average mastery (1–10 scale) for concepts the student is weak in.
+            </p>
+          </Card>
+
+          <Card title="🧮 AI Study Planner">
+            <AIPlanner weaknesses={weaknesses.filter(w=> w.student_id === selectedStudent)} concepts={concepts} />
+          </Card>
+
+          <Card title="🔍 Concept Search (NL)">
+            <ConceptSearch concepts={concepts} courses={courses} courseConcepts={courseConcepts} weaknesses={weaknesses.filter(w=> w.student_id === selectedStudent)} />
           </Card>
         </div>
       </main>
