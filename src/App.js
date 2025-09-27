@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import LogoConnect from './logo-connect.svg';
 import { dayOrder } from "./data";
 import { weakestConcepts, nextFreeSlot, peerMatches, enrolledCourses, conceptResources } from "./logic";
 import { predictMastery } from "./ml/masteryPredictor";
@@ -33,11 +34,16 @@ export default function App() {
   const formatMastery = (m) => (m == null ? '-' : (1 + m * 9).toFixed(1));
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-6">
+    <div className="min-h-screen app-bg p-6">
       <header className="max-w-6xl mx-auto flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">📚 StudyMate Graph</h1>
-          <p className="text-gray-600">Graph-powered daily study companion</p>
+          <div style={{display:'flex', alignItems:'center', gap:12}}>
+            <img src={LogoConnect} alt="Connect and Learn logo" style={{width:46, height:46}} />
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold brand-title">Connect and Learn</h1>
+              <p className="muted">Graph-powered daily study companion</p>
+            </div>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <select

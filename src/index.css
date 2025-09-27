@@ -16,3 +16,36 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Cream theme variables and helpers (overrides Tailwind defaults visually) */
+:root{
+  --bg-1: #fff6ea;
+  --bg-2: #f9efe0;
+  --card-bg: rgba(255,255,255,0.96);
+  --card-border: rgba(200,185,165,0.12);
+  --card-shadow: 0 8px 20px rgba(45,35,25,0.08);
+  --brand-color: #6b3f10;
+  --muted: #8b7f73;
+}
+
+.app-bg{
+  background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+}
+
+.card-custom{
+  background: var(--card-bg);
+  border-radius: 1rem; /* ~rounded-2xl */
+  box-shadow: var(--card-shadow);
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.brand-title{ color: #0b0b0b !important; font-weight: 800; }
+
+.muted { color: var(--muted) }
+
+/* stronger black-ish borders for boxes */
+.box-black-border{ border: 1px solid rgba(0,0,0,0.12) !important; }
+
+/* make Tailwind border utilities prefer a darker neutral when used on these components */
+.border-gray-100{ border-color: rgba(0,0,0,0.06) !important; }
+
