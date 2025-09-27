@@ -1,6 +1,6 @@
-# Getting Started with Create React App
+# StudyMate Graph – AI-Enhanced Study Companion
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Interactive React + Tailwind app that visualizes a student's course + concept landscape, highlights weak areas, and layers on lightweight heuristic AI features (projected mastery, study planner, resource fit scoring, natural language concept search) — all fully client-side with no backend required.
 
 ## Available Scripts
 
@@ -29,23 +29,26 @@ Your app is ready to be deployed!
 
 
 ## Possible Next Steps
-* LocalStorage persistence layer
-* Backend API integration (GraphQL or REST)
-* Authentication + multi-user sessions
-* Dark mode & accessibility improvements
-* Force-directed graph for larger datasets
-* Export plan / schedule as calendar event
+* LocalStorage persistence for added students & plans
+* Real model-backed mastery prediction (regression / small NN)
+* Authentication + multi-user cloud sync
+* Dark mode & accessibility refinements
+* Larger force-directed or hierarchical concept graph
+* Export study plan to calendar / ICS
 
 ---
 
-## Summary
-The app supports:
-* Local visualization & recommendations over in-memory data
-* Onboarding to add a student and see recalculated weaknesses
-* Peer similarity (local heuristic)
-* Resource suggestions per weak concept
+## Feature Summary
+Current capabilities:
+* Student onboarding (add yourself: courses, weak concepts, availability)
+* Weakness detection and projected mastery deltas
+* Graph mini-view of student → courses → weak concepts
+* Peer similarity (local heuristic only; no Neo4j)
+* Resource fit scoring per concept
+* AI Study Planner (time allocation optimizer)
+* Natural language concept search (token embedding)
 
-Extend by adding persistence, authentication, or more advanced graph algorithms in a future backend.
+Extend by adding persistence, real ML models, multi-user auth, or richer graph analytics.
 
 ---
 
