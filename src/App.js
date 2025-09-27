@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { dayOrder } from "./data";
 import { weakestConcepts, nextFreeSlot, peerMatches, enrolledCourses, conceptResources } from "./logic";
 import { predictMastery } from "./ml/masteryPredictor";
-import { scoreResource } from "./ml/resourceRanker";
+import { scoreResource, fitToScale10, fitToLetter, fitLetterStyle } from "./ml/resourceRanker";
 import Card from "./components/Card";
 import Badge from "./components/Badge";
 import GraphMini from "./components/GraphMini";
@@ -141,7 +141,9 @@ export default function App() {
                 <div className="text-sm text-gray-700 mb-2">Resources</div>
                 <ul className="space-y-1">
                   {conceptResources(w.concept_id, 3, { resources }).map((r) => {
-                    const fit = scoreResource(r, { mastery: w.mastery, targetDifficulty: 2 + (w.mastery<0.5?0:1) });
+                    const rawFit = scoreResource(r, { mastery: w.mastery, targetDifficulty: 2 + (w.mastery<0.5?0:1) });
+                    const fit10 = fitToScale10(rawFit);
+                    const letter = fitToLetter(rawFit);
                     return (
                       <li key={r.id} className="flex items-start gap-2 text-xs">
                         <div className="flex-1 min-w-0">
@@ -150,7 +152,7 @@ export default function App() {
                           </a>
                           <span className="text-gray-500"> • {r.duration}m</span>
                           <div className="mt-0.5 flex flex-wrap gap-1 items-center">
-                            <span className="px-1.5 py-0.5 rounded-md bg-green-50 text-green-700">Fit {fit}</span>
+                            <span className={`px-1.5 py-0.5 rounded-md ${fitLetterStyle(letter)} font-medium`}>Fit {fit10} ({letter})</span>
                             {r.difficulty && (
                               <span className="px-1.5 py-0.5 rounded-md bg-gray-200 text-gray-700">D{r.difficulty}</span>
                             )}

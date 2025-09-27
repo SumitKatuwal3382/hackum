@@ -13,3 +13,31 @@ export function rankResources(resources, ctx){
   return [...resources].map(r=> ({ ...r, fitScore: scoreResource(r, ctx) }))
     .sort((a,b)=> b.fitScore - a.fitScore);
 }
+
+// Convert raw 0-1 fit score to a 1-10 scale (rounded to one decimal)
+export function fitToScale10(score){
+  if(score == null || isNaN(score)) return '-';
+  return (1 + score * 9).toFixed(1); // analogous to mastery formatting
+}
+
+// Map score to letter grade (tunable bands)
+export function fitToLetter(score){
+  if(score == null || isNaN(score)) return '—';
+  if(score >= 0.80) return 'A';
+  if(score >= 0.70) return 'B';
+  if(score >= 0.55) return 'C';
+  if(score >= 0.40) return 'D';
+  return 'E';
+}
+
+// Provide a Tailwind color style for letter grade (soft semantic mapping)
+export function fitLetterStyle(letter){
+  switch(letter){
+    case 'A': return 'bg-green-50 text-green-700';
+    case 'B': return 'bg-emerald-50 text-emerald-700';
+    case 'C': return 'bg-yellow-50 text-yellow-700';
+    case 'D': return 'bg-orange-50 text-orange-700';
+    case 'E': return 'bg-red-50 text-red-700';
+    default: return 'bg-gray-100 text-gray-700';
+  }
+}
