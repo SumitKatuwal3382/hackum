@@ -118,3 +118,59 @@ Front-end embedding of API keys is insecure. For production deploy a backend pro
 
 ---
 
+## Environment Variables
+
+This project uses Create React App style public env variables (must be prefixed with `REACT_APP_`). These are injected at build time into the client bundle, so treat any keys here as NON-SECRET / low-privilege.
+
+You now have two layers:
+* `.env` (committed placeholder – never put real secrets here)
+* `.env.local` (git‑ignored – your actual dev key)
+
+Required for Groq suggestion card (place in `.env.local`):
+
+```
+REACT_APP_GROQ_API_KEY=your_key
+```
+
+Optional overrides:
+
+```
+REACT_APP_GROQ_MODEL=llama3-70b-8192
+```
+
+Setup steps:
+1. (If not present) copy values from `.env` or `.env.example` → `.env.local`.
+2. Fill in your real key(s) only in `.env.local`.
+3. Restart the dev server.
+
+Git hygiene:
+* `.env.local` is ignored (see `.gitignore`).
+* Keep `.env.example` updated when adding new public vars.
+
+Production note: For any real deployment involving paid usage or sensitive context, move calls behind a lightweight backend proxy to avoid exposing raw API keys and to implement request quota / abuse controls.
+
+---
+
+## Planned: Claude Sonnet 4 Support
+
+The request "Enable Claude Sonnet 4 for all clients" implies adding Anthropic Claude (Sonnet) as an alternative or additional model provider.
+
+Current status: No Anthropic/Claude code present. Before implementation, confirm desired UX:
+* Replace Groq suggestion card OR add provider switch?
+* Need multi-provider abstraction for prompt + response mapping?
+
+Proposed minimal integration plan (after confirmation):
+1. Introduce `src/ai/anthropicClient.js` with a similar interface: `getStudySuggestion(profile)` returning `{ text, model, meta }`.
+2. Env vars (example – names to be finalized):
+	* `REACT_APP_ANTHROPIC_API_KEY`
+	* `REACT_APP_ANTHROPIC_MODEL` (default `claude-3-5-sonnet-latest` or newer Sonnet 4 identifier when GA)
+3. Refactor `StudySuggestion` to choose provider based on availability/ toggle.
+4. Shared prompt builder to avoid divergence.
+5. Tests: mock fetch to Anthropic endpoint (`https://api.anthropic.com/v1/messages`).
+
+Security reminder: Same exposure caveat applies—front-end only keys are visible to users; production usage should be proxied.
+
+If you confirm this direction I can scaffold the provider abstraction and stub client next.
+
+---
+

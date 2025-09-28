@@ -50,12 +50,12 @@ export default function StudySuggestion({ student, weaknesses, planContext, day,
       </div>
       {error && <div className="p-3 rounded-md bg-red-50 border border-red-100 text-sm text-red-700 whitespace-pre-wrap">{error}</div>}
       {suggestion && !error && (
-        <div className="p-3 rounded-md bg-gray-50 border border-gray-100 text-sm whitespace-pre-wrap leading-snug">
+        <div className="p-4 rounded-md bg-black text-white text-sm whitespace-pre-wrap leading-snug border border-gray-700 shadow-inner font-mono">
           {suggestion}
         </div>
       )}
       {!suggestion && !loading && !error && (
-  <p className="text-xs text-gray-500">Click to generate a concise AI-guided next-steps study plan using Groq (LLaMA model).</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">Click to generate a concise AI-guided next-steps study plan using Groq (LLaMA model).</p>
       )}
       <p className="text-[10px] text-gray-400">Prototype – do not include private data. Suggestions may be imperfect.</p>
     </div>
