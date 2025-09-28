@@ -238,7 +238,7 @@ export default function App() {
         </div>
 
         <div className="flex flex-col gap-6">
-          <Card title="46b Study Buddies">
+          <Card title="Study Buddies">
             {peers.length === 0 ? (
               <p className="text-gray-500">No peers found yet.</p>
             ) : (
