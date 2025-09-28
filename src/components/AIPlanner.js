@@ -28,15 +28,15 @@ export default function AIPlanner({ weaknesses, concepts }){
       {plan.allocations.length === 0 && <p className="text-gray-500 text-sm">Not enough time or no weak concepts to allocate.</p>}
       <ul className="space-y-2">
         {plan.allocations.map(a => (
-          <li key={a.concept_id} className="p-3 rounded-lg bg-gray-50 border border-gray-100">
+          <li key={a.concept_id} className="p-3 rounded-lg bg-[rgba(255,255,255,0.01)] border border-[rgba(255,255,255,0.02)]">
             <div className="flex items-center justify-between mb-1">
-              <span className="font-medium text-gray-900">{a.name}</span>
-              <span className="text-xs text-gray-600">{a.minutes}m</span>
+              <span className="font-medium text-gray-100">{a.name}</span>
+              <span className="text-xs text-gray-400">{a.minutes}m</span>
             </div>
-            <div className="h-2 w-full bg-white rounded overflow-hidden border border-gray-200">
-              <div className="h-full bg-blue-500" style={{ width: `${Math.min(100, (a.minutes / minutes)*100)}%` }} />
+            <div className="h-2 w-full bg-[rgba(255,255,255,0.02)] rounded overflow-hidden border border-[rgba(255,255,255,0.02)]">
+              <div className="h-full bg-[linear-gradient(90deg,#3b82f6,#0ea5ff)]" style={{ width: `${Math.min(100, (a.minutes / minutes)*100)}%` }} />
             </div>
-            <div className="mt-1 text-[11px] text-gray-600">Projected: {(1 + a.projected*9).toFixed(1)}/10 (was {(1 + a.current*9).toFixed(1)}/10)</div>
+            <div className="mt-1 text-[11px] text-gray-400">Projected: {(1 + a.projected*9).toFixed(1)}/10 (was {(1 + a.current*9).toFixed(1)}/10)</div>
           </li>
         ))}
       </ul>

@@ -28,8 +28,19 @@ function polarArc(cx, cy, rOuter, rInner, startAngle, endAngle) {
   return `M ${x0} ${y0} A ${rOuter} ${rOuter} 0 ${largeArc} 1 ${x1} ${y1} L ${x2} ${y2} A ${rInner} ${rInner} 0 ${largeArc} 0 ${x3} ${y3} Z`;
 }
 
-export default function CoursePie({ studentId, enrollments, courses, courseConcepts, weaknesses, concepts, size = 260 }) {
+export default function CoursePie({ studentId, enrollments, courses, courseConcepts, weaknesses, concepts, size = 320 }) {
   const [hover, setHover] = useState(null);
+
+  // friendly color palette (varied hues) — assigned by index
+  const palette = [
+    '#10b981', // green
+    '#3b82f6', // blue
+    '#f59e0b', // amber
+    '#ef4444', // red
+    '#8b5cf6', // purple
+    '#06b6d4', // teal
+    '#f472b6', // pink
+  ];
 
   const data = useMemo(() => {
     const myEnrolls = enrollments.filter(e => e.student_id === studentId);
@@ -59,34 +70,69 @@ export default function CoursePie({ studentId, enrollments, courses, courseConce
   });
 
   return (
-    <div className="relative w-full flex flex-col items-center">
-      <svg viewBox={`0 0 ${size} ${size}`} className="w-full max-w-sm">
-        <g>
-          {slices.map(s => (
-            <path
-              key={s.course_id}
-              d={polarArc(size/2, size/2, size/2 - 8, size/2 - 48, s.start, s.end)}
-              fill={gradeColor(s.grade)}
-              stroke="#fff"
-              strokeWidth={2}
-              className="cursor-pointer transition-opacity duration-150"
-              opacity={hover && hover.course_id !== s.course_id ? 0.35 : 1}
-              onMouseEnter={() => setHover(s)}
-              onMouseLeave={() => setHover(null)}
-            />
-          ))}
-          {/* inner label */}
-          <circle cx={size/2} cy={size/2} r={size/2 - 52} fill="#f8fafc" />
-          <text x={size/2} y={size/2 - 6} textAnchor="middle" className="fill-gray-800 text-sm font-semibold">
-            Courses
-          </text>
-          <text x={size/2} y={size/2 + 12} textAnchor="middle" className="fill-gray-500 text-[10px]">
-            {data.length} enrolled
-          </text>
-        </g>
-      </svg>
+    <div className="relative w-full flex flex-col items-center text-sm">
+      <div className="course-pie-wrap">
+        <svg viewBox={`0 0 ${size} ${size}`} style={{ width: size, height: size }}>
+          <defs>
+            <radialGradient id="centerGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#0b1220" />
+              <stop offset="100%" stopColor="#071019" />
+            </radialGradient>
+            <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="10" result="coloredBlur" />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          <g>
+            {slices.map((s, idx) => {
+              const isHover = hover && hover.course_id === s.course_id;
+              const outerR = isHover ? (size/2 - 2) : (size/2 - 4);
+              const innerR = isHover ? (size/2 - 66) : (size/2 - 68);
+              const color = palette[idx % palette.length];
+              return (
+                <g key={s.course_id} filter={'url(#glow)'}>
+                  <path
+                    d={polarArc(size/2, size/2, outerR, innerR, s.start, s.end)}
+                    fill={color}
+                    stroke="rgba(255,255,255,0.02)"
+                    strokeWidth={2}
+                    className="cursor-pointer transition-all duration-150"
+                    opacity={hover && hover.course_id !== s.course_id ? 0.28 : 1}
+                    onMouseEnter={() => setHover(s)}
+                    onMouseLeave={() => setHover(null)}
+                  />
+                  {/* percentage label positioned at slice midpoint */}
+                  {(() => {
+                    const mid = (s.start + s.end) / 2;
+                    const labelR = (outerR + innerR) / 2;
+                    const lx = size/2 + labelR * Math.cos(mid);
+                    const ly = size/2 + labelR * Math.sin(mid);
+                    const pct = Math.round((s.conceptCount/total) * 100);
+                    return (
+                      <text key={`lab-${s.course_id}`} x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" className="svg-slice-label" fontSize={12}>{pct}%</text>
+                    );
+                  })()}
+                </g>
+              );
+            })}
+            {/* inner dark center with radial gloss */}
+            <circle cx={size/2} cy={size/2} r={size/2 - 88} fill="url(#centerGrad)" stroke="rgba(255,255,255,0.02)" strokeWidth={1.5} />
+            <circle cx={size/2} cy={size/2} r={size/2 - 110} fill="#071019" />
+            <text x={size/2} y={size/2 - 6} textAnchor="middle" className="course-pie-center-text text-[18px]">
+              Courses
+            </text>
+            <text x={size/2} y={size/2 + 18} textAnchor="middle" className="course-pie-center-sub text-[12px]">
+              {data.length} enrolled
+            </text>
+          </g>
+        </svg>
+      </div>
+
       {hover && (
-        <div className="absolute -bottom-2 translate-y-full px-3 py-2 rounded-lg bg-gray-900 text-white text-xs shadow-md w-56 text-left">
+        <div className="absolute -bottom-2 translate-y-full px-3 py-2 rounded-lg bg-[rgba(4,8,14,0.9)] text-white text-xs shadow-md w-64 text-left border border-[rgba(255,255,255,0.02)]">
           <div className="font-medium text-sm mb-1">{hover.title}</div>
             <div className="grid grid-cols-2 gap-x-2 gap-y-1">
               <span className="text-gray-400">Concepts:</span>
@@ -98,13 +144,22 @@ export default function CoursePie({ studentId, enrollments, courses, courseConce
             </div>
         </div>
       )}
-      <div className="mt-4 flex flex-wrap gap-3 justify-center text-[11px]">
-        {slices.map(s => (
-          <div key={s.course_id} className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-sm" style={{ background: gradeColor(s.grade) }} />
-            <span className="text-gray-700">{s.course_id}</span>
-          </div>
-        ))}
+
+      <div className="mt-6 course-pie-legend w-full">
+        <ul>
+          {slices.map((s, idx) => {
+            const pct = Math.round((s.conceptCount / total) * 100);
+            return (
+              <li key={s.course_id}>
+                <div className="left">
+                  <span className="course-pie-dot" style={{background: palette[idx % palette.length]}} />
+                  <span className="course-pie-title">{s.title}</span>
+                </div>
+                <div className="pct">{pct}%</div>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
   );

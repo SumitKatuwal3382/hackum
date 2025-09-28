@@ -6,12 +6,14 @@ import { predictMastery } from "./ml/masteryPredictor";
 import { scoreResource, fitToScale10, fitToLetter, fitLetterStyle } from "./ml/resourceRanker";
 import Card from "./components/Card";
 import Badge from "./components/Badge";
-import GraphMini from "./components/GraphMini";
 import Legend from "./components/Legend";
 import StudentOnboarding from "./components/StudentOnboarding";
 import { useData } from "./store";
 import CoursePie from "./components/CoursePie";
+// CoursePlanets3D was replaced by CoursePie for the Course Load Breakdown card
+// import CoursePlanets3D from "./components/CoursePlanets3D";
 import PeerInsights from "./components/PeerInsights";
+import CoursePlanets3D from "./components/CoursePlanets3D";
 // Removed QueryPlayground (Neo4j/query feature disabled)
 import AIPlanner from "./components/AIPlanner";
 import ConceptSearch from "./components/ConceptSearch";
@@ -32,22 +34,30 @@ export default function App() {
 
   // helper to format mastery (stored 0-1) as 1-10 scale for display
   const formatMastery = (m) => (m == null ? '-' : (1 + m * 9).toFixed(1));
+  const [hoverRes, setHoverRes] = useState(null);
+
+  // apply the starfield image at runtime so the CSS loader doesn't try to resolve it at build-time
+  // include dark radial and linear overlays before the image to keep UI contrast
+  const rootBgStyle = {
+    background: "radial-gradient(1200px 600px at 10% 10%, rgba(14,30,52,0.35), transparent 10%), linear-gradient(180deg, rgba(2,4,8,0.55), rgba(7,8,12,0.75)), url('/starfield.jpg') center center / cover no-repeat",
+  };
 
   return (
-    <div className="min-h-screen app-bg p-6">
-      <header className="max-w-6xl mx-auto flex items-center justify-between mb-6">
+    <div className="min-h-screen app-bg p-6" style={rootBgStyle}>
+      <header className="topbar">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
         <div>
           <div style={{display:'flex', alignItems:'center', gap:12}}>
-            <img src={LogoConnect} alt="Connect and Learn logo" style={{width:46, height:46}} />
+            <div className="logo-badge"><img src="/placeholder-logo.svg" alt="logo" style={{width:34,height:34}}/></div>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold brand-title">Connect and Learn</h1>
-              <p className="muted">Graph-powered daily study companion</p>
+              <p className="brand-sub">Cosmic knowledge exploration platform</p>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+  <div className="flex items-center gap-3">
           <select
-            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-gray-900"
+            className="px-3 py-2 rounded-xl border border-gray-700 bg-transparent text-gray-200"
             value={selectedStudent}
             onChange={(e) => setSelectedStudent(e.target.value)}
           >
@@ -57,11 +67,12 @@ export default function App() {
           </select>
           <button
             onClick={() => setShowOnboard((v) => !v)}
-            className="px-3 py-2 rounded-xl border border-blue-600 text-blue-600 hover:bg-blue-50 text-sm"
+            className="btn-primary"
             type="button"
           >
             {showOnboard ? 'Close' : 'Add Yourself'}
           </button>
+        </div>
         </div>
       </header>
 
@@ -83,7 +94,7 @@ export default function App() {
             right={
               <div className="flex items-center gap-2">
                 <select
-                  className="px-2 py-1 rounded-lg border border-gray-200 bg-white text-sm"
+                  className="px-2 py-1 rounded-lg border border-gray-700 bg-transparent text-sm text-gray-200"
                   value={day}
                   onChange={(e) => setDay(e.target.value)}
                 >
@@ -97,34 +108,46 @@ export default function App() {
                   max={23}
                   value={hourNow}
                   onChange={(e) => setHourNow(Number(e.target.value))}
-                  className="w-20 px-2 py-1 rounded-lg border border-gray-200 bg-white text-sm"
+                  className="w-20 px-2 py-1 rounded-lg border border-gray-700 bg-transparent text-sm text-gray-200"
                 />
                 <Badge>Now: {day} {String(hourNow).padStart(2, "0")}:00</Badge>
               </div>
             }
           >
-            <div className="mb-4">
-              <p className="text-gray-700">
-                {stu?.name ? (
-                  <><span className="font-medium">{stu.name}</span> • Major: {stu.major} • GPA {Number(stu.gpa || 0).toFixed(2)}</>
-                ) : (
-                  <span className="text-gray-500">No student selected.</span>
-                )}
-              </p>
+            <div className="mb-4 student-header">
+              {stu?.name ? (
+                <div style={{display:'flex', alignItems:'center', gap:12}}>
+                  <div className="avatar-circle">{(stu.name || '').split(' ').map(n=>n[0]).slice(0,2).join('')}</div>
+                  <div>
+                    <div style={{display:'flex', alignItems:'center', gap:10}}>
+                      <div className="student-name">{stu.name}</div>
+                      <div className="pill major-pill">{stu.major ? `${stu.major} Major` : 'Undeclared'}</div>
+                      <div className="pill gpa-pill">GPA {Number(stu.gpa || 0).toFixed(2)}</div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <span className="text-gray-500">No student selected.</span>
+              )}
             </div>
 
             {slot ? (
               <div className="mb-4">
-                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-blue-50 border border-blue-100">
-                  <span className="text-blue-700 font-medium">Suggested slot</span>
-                  <span className="text-blue-800">
-                    {slot.day} {String(slot.hour_start).padStart(2, "0")}:00–{String(slot.hour_end).padStart(2, "0")}:00
-                  </span>
+                <div className="session-card rounded-xl p-5">
+                  <div style={{display:'flex', alignItems:'center', gap:16}}>
+                    <div className="session-icon">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 10h10v2H7z" fill="#9ed7ff"/><path d="M7 14h6v2H7z" fill="#9ed7ff"/><path d="M3 6h18v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6zm2-3h2v2H5V3zm10 0h2v2h-2V3z" fill="#9ed7ff"/></svg>
+                    </div>
+                    <div>
+                      <div className="session-title">Optimized Study Session</div>
+                      <div className="session-subtext">{slot.day} {String(slot.hour_start).padStart(2, "0")}:00–{String(slot.hour_end).padStart(2, "0")}:00 • AI-recommended focus time</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             ) : (
               <div className="mb-4">
-                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-yellow-50 border border-yellow-100 text-yellow-800">
+                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.02)] text-yellow-300">
                   No upcoming availability found.
                 </div>
               </div>
@@ -133,80 +156,83 @@ export default function App() {
             {weak.map((w) => {
               const proj = predictMastery(w.mastery || 0, {});
               const projDisplay = (1 + (proj.projected)*9).toFixed(1);
+              const resourcesList = conceptResources(w.concept_id, 3, { resources });
               return (
-                <div key={w.concept_id} className="p-4 rounded-xl border border-gray-100 bg-gray-50 mb-2">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-gray-900 font-medium">
-                      Concept: {w.concept.name} <span className="text-gray-500">({w.concept_id})</span>
+                <div key={w.concept_id} className="p-4 rounded-xl border border-[rgba(255,255,255,0.03)] bg-[rgba(255,255,255,0.01)] mb-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <div className="text-lg font-extrabold text-gray-100">{w.concept.name} <span className="text-gray-400 text-sm">({w.concept_id})</span></div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge>now {formatMastery(w.mastery)}/10</Badge>
-                      <Badge>proj {projDisplay}/10</Badge>
+                      <div className="pill-muted">now {formatMastery(w.mastery)}/10</div>
+                      <div className="pill">proj {projDisplay}/10</div>
                     </div>
                   </div>
-                <div className="text-sm text-gray-700 mb-2">Resources</div>
-                <ul className="space-y-1">
-                  {conceptResources(w.concept_id, 3, { resources }).map((r) => {
-                    const rawFit = scoreResource(r, { mastery: w.mastery, targetDifficulty: 2 + (w.mastery<0.5?0:1) });
-                    const fit10 = fitToScale10(rawFit);
-                    const letter = fitToLetter(rawFit);
-                    return (
-                      <li key={r.id} className="flex items-start gap-2 text-xs">
-                        <div className="flex-1 min-w-0">
-                          <a href={r.url} target="_blank" rel="noreferrer" className="text-blue-700 hover:underline font-medium">
-                            {r.type.charAt(0).toUpperCase()+r.type.slice(1)}
-                          </a>
-                          <span className="text-gray-500"> • {r.duration}m</span>
-                          <div className="mt-0.5 flex flex-wrap gap-1 items-center">
-                            <span className={`px-1.5 py-0.5 rounded-md ${fitLetterStyle(letter)} font-medium`}>Fit {fit10} ({letter})</span>
-                            {r.difficulty && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-gray-200 text-gray-700">D{r.difficulty}</span>
-                            )}
-                            {r.rating && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-yellow-100 text-yellow-800">★ {r.rating.toFixed(1)}</span>
-                            )}
-                            {r.tags && r.tags.slice(0,2).map(t => (
-                              <span key={t} className="px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-600">{t}</span>
-                            ))}
+
+                  {/* thin progress line */}
+                  <div className="progress-wrap mb-4" style={{height:8}}>
+                    <div className="progress-fill" style={{width: `${Math.min(100, ( (w.mastery||0) * 100))}%`}} />
+                  </div>
+
+                  <div className="mb-2 text-sm text-gray-300">Resources</div>
+                    <ul className="space-y-3">
+                    {resourcesList.map(r => {
+                      const rawFit = scoreResource(r, { mastery: w.mastery, targetDifficulty: 2 + (w.mastery<0.5?0:1) });
+                      const fit10 = fitToScale10(rawFit);
+                      const letter = fitToLetter(rawFit);
+                      return (
+                        <li key={r.id} className="flex items-center justify-between res-row">
+                          <div className="flex items-center gap-4">
+                            <div className="res-icon">
+                              {r.type === 'video' ? (
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7-11-7z" fill="#9ed7ff"/></svg>
+                              ) : (
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 4h12v14H6z" fill="#9ed7ff"/></svg>
+                              )}
+                            </div>
+                            <div>
+                              <a href={r.url} target="_blank" rel="noreferrer" className="text-gray-100 font-medium text-[15px] link-underline">{r.type.charAt(0).toUpperCase()+r.type.slice(1)}</a>
+                              <div className="text-sm text-gray-400 text-[13px]">{r.duration}m</div>
+                            </div>
                           </div>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
+                          <div className="flex items-center gap-2">
+                            <div className={"pill-fit fit-" + (letter || 'C')}>
+                              Fit {fit10} ({letter})
+                            </div>
+                            {r.difficulty && <div className="pill-muted">D{r.difficulty}</div>}
+                            {r.rating && <div className="pill-star">★ {r.rating.toFixed(1)}</div>}
+                            {r.tags && r.tags.slice(0,2).map(t => <div key={t} className="tag-pill">{t}</div>)}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
               );
             })}
           </Card>
 
-          <Card title="🧠 Why these? (Graph neighborhood)">
-            <GraphMini
-              studentId={selectedStudent}
-              conceptsToShow={targetConceptIds}
-              students={students}
-              courses={courses}
-              concepts={concepts}
-              enrollments={enrollments}
-              courseConcepts={courseConcepts}
-            />
-            <div className="mt-4">
-              <Legend />
+          {/* Graph neighborhood removed — using Knowledge Universe (3D planets) instead */}
+          {/* Knowledge Universe (3D planets) placed to appear alongside the Course Load Breakdown */}
+          <Card title="30c Knowledge Universe">
+            <div style={{height: 360}} className="rounded-xl overflow-hidden">
+                <CoursePlanets3D height={420} studentId={selectedStudent} students={students} courses={courses} concepts={concepts} enrollments={enrollments} courseConcepts={courseConcepts} weaknesses={weaknesses} />
             </div>
           </Card>
         </div>
 
         <div className="flex flex-col gap-6">
-          <Card title="👥 Study Buddies">
+          <Card title="46b Study Buddies">
             {peers.length === 0 ? (
-              <p className="text-gray-600">No peers found yet.</p>
+              <p className="text-gray-500">No peers found yet.</p>
             ) : (
               <ul className="space-y-3">
                 {peers.map((p) => (
-                  <li key={`${p.student_id}-${p.concept_id}`} className="p-3 rounded-xl border border-gray-100 bg-white">
+                  <li key={`${p.student_id}-${p.concept_id}`} className="p-3 rounded-xl border border-[rgba(255,255,255,0.02)] bg-[rgba(255,255,255,0.01)]">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="font-medium text-gray-900">{p.student.name}</div>
-                        <div className="text-gray-600 text-sm">Also weak in {p.concept.name}</div>
+                        <div className="font-medium text-gray-100">{p.student.name}</div>
+                        <div className="text-gray-400 text-sm">Also weak in {p.concept.name}</div>
                       </div>
                       <Badge>mastery {formatMastery(p.mastery)}/10</Badge>
                     </div>
@@ -216,24 +242,13 @@ export default function App() {
             )}
           </Card>
 
+          
+
           <Card title="🤝 Peer Insights (Prototype)">
             <PeerInsights studentId={selectedStudent} students={students} enrollments={enrollments} />
           </Card>
 
-          <Card title="📘 Enrolled Courses">
-            <ul className="space-y-2">
-              {enrolled.map((c) => (
-                <li key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
-                  <div>
-                    <div className="font-medium text-gray-900">{c.title}</div>
-                    <div className="text-gray-600 text-sm">{c.id} • Level {c.level}</div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </Card>
-
-          <Card title="📊 Course Load Breakdown">
+          <Card title="� Course Load Breakdown" className="right-card center">
             {selectedStudent ? (
               <CoursePie
                 studentId={selectedStudent}
@@ -251,6 +266,20 @@ export default function App() {
             </p>
           </Card>
 
+          <Card title="�📘 Enrolled Courses">
+            <ul className="space-y-2">
+              {enrolled.map((c) => (
+                <li key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-[rgba(255,255,255,0.01)] border border-[rgba(255,255,255,0.02)]">
+                  <div>
+                    <div className="font-medium text-gray-100">{c.title}</div>
+                    <div className="text-gray-400 text-sm">{c.id} • Level {c.level}</div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Card>
+
+          
           <Card title="🧮 AI Study Planner">
             <AIPlanner weaknesses={weaknesses.filter(w=> w.student_id === selectedStudent)} concepts={concepts} />
           </Card>

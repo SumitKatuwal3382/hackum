@@ -226,13 +226,13 @@ export default function GraphMini({
   <div ref={containerRef} className="w-full h-72 relative select-none" onWheel={handleWheel} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp} onContextMenu={(e)=>e.preventDefault()} onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
       <svg
         viewBox={`0 0 ${width} ${height}`}
-        className="w-full h-full bg-white rounded-2xl shadow-sm"
+        className="w-full h-full bg-[rgba(255,255,255,0.01)] rounded-2xl shadow-[0_8px_30px_rgba(2,6,23,0.6)]"
         role="img"
         aria-label="Student course and concept relationship graph"
         onMouseDown={handleMouseDown}
         style={{ cursor: panning ? 'grabbing' : enablePan ? 'grab' : 'default' }}
       >
-        <defs>
+  <defs>
           {/* radial gradients for planets (course vs concept) */}
           <radialGradient id="grad-student" cx="30%" cy="30%" r="65%">
             <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
@@ -247,7 +247,7 @@ export default function GraphMini({
             <stop offset="70%" stopColor="#059669" />
           </radialGradient>
         </defs>
-        <g transform={`translate(${offset.x} ${offset.y}) scale(${scale})`}>
+  <g transform={`translate(${offset.x} ${offset.y}) scale(${scale})`}>
         {/* draw links (behind planets) */}
         {coursePositions.map((cp) => (
           <line
@@ -298,11 +298,12 @@ export default function GraphMini({
             const label = node.title || node.name || node.label;
             const nid = `${node.type}-${node.id}`;
             const isDimmed = hover && !((node.type === 'course' && relatedCourseIds.includes(node.id)) || (node.type === 'concept' && relatedConceptIds.includes(node.id)) || node.type === 'student');
-            return (
+              return (
               <g
                 key={nid}
-                transform={`translate(${cxn} ${cyn})`}
+                transform={`translate(${cxn} ${cyn}) scale(${hover && hover.id===node.id ? 1.08 : 1})`}
                 opacity={isDimmed ? 0.28 : 1}
+                style={{ transition: 'transform 180ms cubic-bezier(.2,.9,.2,1)' }}
                 cursor="pointer"
                 onMouseEnter={() => {
                   const labelText = node.type === 'concept' && node.mastery != null ? `${label} (mastery ${(1 + node.mastery * 9).toFixed(1)}/10)` : label;
@@ -320,7 +321,7 @@ export default function GraphMini({
                 <circle r={scaledR * 0.35} cx={-scaledR * 0.4} cy={-scaledR * 0.5} fill="rgba(255,255,255,0.65)" />
                 {/* label: only show for student/course or if large or hovered */}
                 { (node.type !== 'concept' || scaledR > 14 || (hover && hover.id === node.id && hover.type === node.type)) && (
-                  <text x={0} y={scaledR + 12} textAnchor="middle" fontSize="10" fill="#111827">{(label || '').split(" ")[0]}</text>
+                  <text x={0} y={scaledR + 12} textAnchor="middle" fontSize="10" fill="#cfe7ff">{(label || '').split(" ")[0]}</text>
                 ) }
               </g>
             );

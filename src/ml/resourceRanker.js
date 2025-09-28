@@ -32,12 +32,6 @@ export function fitToLetter(score){
 
 // Provide a Tailwind color style for letter grade (soft semantic mapping)
 export function fitLetterStyle(letter){
-  switch(letter){
-    case 'A': return 'bg-green-50 text-green-700';
-    case 'B': return 'bg-emerald-50 text-emerald-700';
-    case 'C': return 'bg-yellow-50 text-yellow-700';
-    case 'D': return 'bg-orange-50 text-orange-700';
-    case 'E': return 'bg-red-50 text-red-700';
-    default: return 'bg-gray-100 text-gray-700';
-  }
+  // Return a base pill class; letter can be used to add modifiers in future.
+  return 'pill-fit';
 }
