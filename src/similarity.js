@@ -91,10 +91,18 @@ export function topSimilar(students, enrollments, studentId){
     base.style = s.score;
     map.set(s.peerId, base);
   }
-  const merged = [...map.values()].map(m => ({
-    ...m,
-    combined: +(((m.perf||0)*0.6 + (m.style||0)*0.4).toFixed(3))
-  }));
+  function clamp01(x){ return x < 0 ? 0 : x > 1 ? 1 : x; }
+  const merged = [...map.values()].map(m => {
+    const perfNorm = clamp01(m.perf || 0);
+    const styleNorm = clamp01(m.style || 0);
+    const combined = +( (perfNorm*0.6 + styleNorm*0.4).toFixed(3) );
+    return {
+      ...m,
+      perf: perfNorm,
+      style: styleNorm,
+      combined
+    };
+  });
   merged.sort((a,b)=> b.combined - a.combined);
   return merged.slice(0,5);
 }

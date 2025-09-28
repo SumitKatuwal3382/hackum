@@ -18,13 +18,13 @@ export default function PeerInsights({ studentId, students, enrollments }){
           <div key={p.peerId} className="p-3 rounded-xl border border-[rgba(255,255,255,0.02)] bg-[rgba(255,255,255,0.01)]">
               <div className="flex items-center justify-between mb-1">
                 <div className="font-medium text-gray-100">{stu?.name || p.peerId}</div>
-                <Badge>{(p.combined*10).toFixed(1)}/10</Badge>
+                <Badge>{Math.min(10, (p.combined*10)).toFixed(1)}/10</Badge>
               </div>
               <div className="text-xs text-gray-400 flex flex-wrap gap-2">
                 <span>Style: {stu?.learningStyle}</span>
                 {p.overlap && <span>Overlap courses: {p.overlap}</span>}
-                {p.perf && <span>Perf sim: {(p.perf*10).toFixed(1)}/10</span>}
-                {p.style && <span>Style sim: {(p.style*10).toFixed(1)}/10</span>}
+                {p.perf !== undefined && <span>Perf sim: {Math.min(10,(p.perf*10)).toFixed(1)}/10</span>}
+                {p.style !== undefined && <span>Style sim: {Math.min(10,(p.style*10)).toFixed(1)}/10</span>}
               </div>
             </div>
         );
