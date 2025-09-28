@@ -65,8 +65,17 @@ export default function StudentOnboarding({ onCreated, onCancel }) {
           <input id="major" value={major} onChange={e=>setMajor(e.target.value)} className="w-full px-3 py-2 border border-[rgba(255,255,255,0.03)] rounded-lg text-sm bg-transparent text-gray-200" />
         </div>
         <div>
-          <label htmlFor="gpa" className="block text-xs font-medium text-gray-600 mb-1">GPA</label>
-            <input id="gpa" type="number" step="0.01" min="0" max="4" value={gpa} onChange={e=>setGpa(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
+          <label htmlFor="gpa" className="block text-xs font-medium text-gray-400 mb-1">GPA</label>
+          <input
+            id="gpa"
+            type="number"
+            step="0.01"
+            min="0"
+            max="4"
+            value={gpa}
+            onChange={e=>setGpa(e.target.value)}
+            className="w-full px-3 py-2 border border-[rgba(255,255,255,0.03)] rounded-lg text-sm bg-transparent text-gray-200 focus:outline-none focus:ring-2 focus:ring-sky-500/60 focus:border-sky-500/40"
+          />
         </div>
       </div>
 
