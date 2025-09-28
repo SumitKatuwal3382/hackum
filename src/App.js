@@ -230,7 +230,7 @@ export default function App() {
 
           {/* Graph neighborhood removed — using Knowledge Universe (3D planets) instead */}
           {/* Knowledge Universe (3D planets) placed to appear alongside the Course Load Breakdown */}
-          <Card title="30c Knowledge Universe">
+          <Card title="Courses">
             <div style={{height: 360}} className="rounded-xl overflow-hidden">
                 <CoursePlanets3D height={420} studentId={selectedStudent} students={students} courses={courses} concepts={concepts} enrollments={enrollments} courseConcepts={courseConcepts} weaknesses={weaknesses} />
             </div>
