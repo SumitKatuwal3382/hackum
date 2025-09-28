@@ -9,8 +9,12 @@ export function DataProvider({ children }) {
   const [weaknesses, setWeaknesses] = useState(seedWeaknesses);
   const [availability, setAvailability] = useState(seedAvailability);
   const [studySessions, setStudySessions] = useState(()=> {
+    // Support migration: prefer new key, fall back to legacy key.
+    const NEW_KEY = 'connectandlearn_studySessions';
+    const OLD_KEY = 'studymate_studySessions';
     try {
-      const raw = localStorage.getItem('studymate_studySessions');
+      let raw = localStorage.getItem(NEW_KEY);
+      if(!raw) raw = localStorage.getItem(OLD_KEY);
       if(raw){
         const parsed = JSON.parse(raw);
         if(Array.isArray(parsed)) return parsed;
@@ -21,7 +25,7 @@ export function DataProvider({ children }) {
 
   // Persist sessions (debounced minimal via effect)
   useEffect(()=> {
-    try { localStorage.setItem('studymate_studySessions', JSON.stringify(studySessions)); } catch { /* ignore quota */ }
+    try { localStorage.setItem('connectandlearn_studySessions', JSON.stringify(studySessions)); } catch { /* ignore quota */ }
   }, [studySessions]);
 
   const addStudent = useCallback((student) => {

@@ -1,4 +1,4 @@
-# StudyMate Graph – AI-Enhanced Study Companion
+# Connect and Learn – AI-Enhanced Study Companion
 
 Interactive React + Tailwind app that visualizes a student's course + concept landscape, highlights weak areas, and layers on lightweight heuristic AI features (projected mastery, study planner, resource fit scoring, natural language concept search) — all fully client-side with no backend required.
 
