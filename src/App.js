@@ -297,7 +297,7 @@ export default function App() {
 
           
 
-          <Card title="💡 Gemini Suggestion">
+          <Card title="💡 AI Suggestion">
             <StudySuggestion
               student={stu}
               weaknesses={weak}
