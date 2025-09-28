@@ -81,3 +81,40 @@ Token-based embedding of concept names + related course titles with cosine simil
 
 All logic lives in `src/ml/` for easy swapping with real models later.
 
+---
+
+## (New) Groq Study Suggestion Prototype
+
+An optional card "💡 Gemini Suggestion" (label kept for now) now generates a concise motivational next-steps plan using Groq Cloud's low-latency LLaMA models via an OpenAI‑compatible Chat Completions endpoint.
+
+### Enable It
+1. Create a Groq Cloud account & API key: https://console.groq.com/ 
+2. Create `.env.local` in the project root (git‑ignored):
+	```bash
+	REACT_APP_GROQ_API_KEY=YOUR_KEY_HERE
+	```
+3. Restart dev server: `npm start`
+4. Click "Get AI Suggestion" in the card.
+
+### How It Works
+* Builds a prompt with current day/time, student profile, weak concepts, and heuristic plan.
+* Calls: `POST https://api.groq.com/openai/v1/chat/completions` with a model chosen from an ordered list.
+* Override via env var: `REACT_APP_GROQ_MODEL`.
+* Static fallback order (if decommissioned / not found): `llama3-70b-8192` → `llama3-8b-8192` → `mixtral-8x7b-32768`.
+* If ALL static fallbacks are decommissioned, the client auto-fetches the live model list (`/openai/v1/models`), heuristically prefers newer llama or mixtral variants, and retries.
+* Adds a footer line `(Model fallback used: <model>)` or `(Model auto-discovered: <model>)` when not using the primary.
+* Renders first choice message content.
+
+### Important Security Note
+Front-end embedding of API keys is insecure. For production deploy a backend proxy (e.g., `/api/study-suggestion`) that holds the key server-side and relays only sanitized prompt + response.
+
+### File References
+* API client: `src/ai/groqClient.js` (retry + fallback + dynamic discovery)
+* Deprecated stub (Gemini): `src/ai/geminiClient.js` (left as guard)
+* UI component: `src/components/StudySuggestion.js`
+
+### Testing
+`groqClient.test.js` covers prompt shaping and missing key error. Add integration mocks by stubbing `fetch` if you need richer coverage.
+
+---
+

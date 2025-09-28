@@ -16,6 +16,8 @@ import PeerInsights from "./components/PeerInsights";
 import CoursePlanets3D from "./components/CoursePlanets3D";
 // Removed QueryPlayground (Neo4j/query feature disabled)
 import AIPlanner from "./components/AIPlanner";
+import StudySuggestion from "./components/StudySuggestion";
+import { planStudy } from './ml/studyPlanner';
 import ConceptSearch from "./components/ConceptSearch";
 
 export default function App() {
@@ -31,6 +33,17 @@ export default function App() {
   const targetConceptIds = weak.map((w) => w.concept_id);
   const peers = useMemo(() => selectedStudent ? peerMatches(selectedStudent, targetConceptIds, 3, { weaknesses, students, concepts }) : [], [selectedStudent, targetConceptIds, weaknesses, students, concepts]);
   const enrolled = useMemo(() => selectedStudent ? enrolledCourses(selectedStudent, { enrollments, courses }) : [], [selectedStudent, enrollments, courses]);
+  // derive a lightweight plan (reuse logic from AIPlanner) for context to Gemini without duplicating UI state
+  const geminiPlanContext = useMemo(()=>{
+    const weakConcepts = weak.map(w => ({
+      concept_id: w.concept_id,
+      name: w.concept?.name || w.concept_id,
+      mastery: w.mastery,
+      difficultyGuess: 2.5
+    }));
+    const plan = planStudy({ concepts: weakConcepts, totalMinutes: 120, slice: 15 });
+    return { plan };
+  }, [weak]);
 
   // helper to format mastery (stored 0-1) as 1-10 scale for display
   const formatMastery = (m) => (m == null ? '-' : (1 + m * 9).toFixed(1));
@@ -282,6 +295,16 @@ export default function App() {
           
           <Card title="🧮 AI Study Planner">
             <AIPlanner weaknesses={weaknesses.filter(w=> w.student_id === selectedStudent)} concepts={concepts} />
+          </Card>
+
+          <Card title="💡 Gemini Suggestion">
+            <StudySuggestion
+              student={stu}
+              weaknesses={weak}
+              planContext={geminiPlanContext}
+              day={day}
+              hourNow={hourNow}
+            />
           </Card>
 
           <Card title="🔍 Concept Search (NL)">
