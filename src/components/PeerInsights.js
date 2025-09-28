@@ -31,7 +31,7 @@ export default function PeerInsights({ studentId, students, enrollments }){
       })}
       {me && (
         <p className="mt-2 text-[11px] text-gray-500 leading-snug">
-          Combined score = 60% performance + 40% learning style (local heuristic only; Neo4j removed).
+          Combined score = 60% performance + 40% learning style.
         </p>
       )}
     </div>

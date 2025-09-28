@@ -108,7 +108,7 @@ export default function StudentOnboarding({ onCreated, onCancel }) {
                 return (
                   <div key={w.concept_id} className="flex items-center gap-3 text-xs">
                     <span className="w-32 text-gray-300 truncate">{concept.name}</span>
-                    <input type="range" min={0} max={1} step={0.01} value={w.mastery} onChange={e=>updateMastery(w.concept_id, e.target.value)} className="flex-1" />
+                    <input type="range" min={0} max={1} step={0.01} value={w.mastery} onChange={e=>updateMastery(w.concept_id, e.target.value)} className="flex-1 range-sky" />
                     <span className="tabular-nums text-gray-400 w-12 text-right">{(1 + w.mastery * 9).toFixed(1)}/10</span>
                   </div>
                 );
