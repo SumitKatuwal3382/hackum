@@ -87,6 +87,10 @@ export function DataProvider({ children }) {
     }));
   }, []);
 
+  const resetStudySessions = useCallback((studentId, signature) => {
+    setStudySessions(prev => prev.filter(s => !(s.studentId === studentId && (!signature || s.signature === signature))));
+  }, []);
+
   const value = {
     students,
     courses,
@@ -101,6 +105,7 @@ export function DataProvider({ children }) {
     updateStudySession,
     startStudySession,
     completeStudySession,
+  resetStudySessions,
     addStudent,
     addEnrollment,
     addWeakness,

@@ -1,84 +1,117 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useEffect, useState } from 'react';
 import { useData } from '../store';
 import Badge from './Badge';
 
-// Displays checklist of study sessions derived from a plan
-// Props: studentId, allocations (from plan.allocations)
-export default function StudyChecklist({ studentId, allocations }){
-  const { studySessions, createStudySessionsFromPlan, startStudySession, completeStudySession, updateStudySession } = useData();
+// Improved checklist with reliable creation, reset, and live timer.
+export default function StudyChecklist({ studentId, allocations }) {
+  const {
+    studySessions,
+    createStudySessionsFromPlan,
+    startStudySession,
+    completeStudySession,
+    updateStudySession,
+    resetStudySessions
+  } = useData();
 
-  // Derive or create sessions corresponding to current allocations
-  const sessions = useMemo(() => {
-    if(!studentId) return [];
-    return createStudySessionsFromPlan({ studentId, allocations }) || [];
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [studentId, allocations]);
+  const signature = useMemo(() => allocations.map(a => a.concept_id + ':' + a.minutes).join('|'), [allocations]);
 
-  const totalPlanned = sessions.reduce((a,s)=> a + s.plannedMinutes, 0);
-  const totalDone = sessions.reduce((a,s)=> a + (s.status === 'done' ? s.completedMinutes : 0), 0);
-  const pct = totalPlanned ? Math.round((totalDone/totalPlanned)*100) : 0;
+  // Ensure sessions exist for current plan.
+  useEffect(() => {
+    if (!studentId || allocations.length === 0) return;
+    createStudySessionsFromPlan({ studentId, allocations });
+  }, [studentId, allocations, createStudySessionsFromPlan]);
+
+  // Filter sessions for student + current signature.
+  const sessions = useMemo(() => studySessions.filter(s => s.studentId === studentId && s.signature === signature), [studySessions, studentId, signature]);
+
+  const totalPlanned = sessions.reduce((a, s) => a + s.plannedMinutes, 0);
+  const totalDone = sessions.reduce((a, s) => a + (s.status === 'done' ? s.completedMinutes : 0), 0);
+  const pct = totalPlanned ? Math.round((totalDone / totalPlanned) * 100) : 0;
+
+  // Live timer state (store elapsed for in-progress sessions visually only).
+  const [, forceTick] = useState(0);
+  useEffect(() => {
+    const hasInProgress = sessions.some(s => s.status === 'in-progress');
+    if(!hasInProgress) return; // no timer needed
+    const id = setInterval(() => forceTick(t => t + 1), 60000); // tick every minute
+    return () => clearInterval(id);
+  }, [sessions]);
 
   const handleManualMinutes = useCallback((id, value) => {
-    const v = Math.max(0, Number(value)||0);
+    const v = Math.max(0, Number(value) || 0);
     updateStudySession(id, { completedMinutes: v });
   }, [updateStudySession]);
 
+  const handleToggle = useCallback((s) => {
+    if (s.status === 'pending') startStudySession(s.id);
+    else if (s.status === 'in-progress') completeStudySession(s.id);
+    else if (s.status === 'done') updateStudySession(s.id, { status: 'pending', completedMinutes: 0, startedAt: undefined, finishedAt: undefined });
+  }, [startStudySession, completeStudySession, updateStudySession]);
+
+  const handleReset = () => {
+    resetStudySessions(studentId, signature);
+  };
+
+  function displayElapsed(s){
+    if(s.status === 'in-progress' && s.startedAt){
+      const mins = Math.ceil((Date.now() - s.startedAt)/60000);
+      return Math.max(mins, s.completedMinutes || 0);
+    }
+    return s.completedMinutes || 0;
+  }
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold text-gray-200">Study Checklist</h4>
-        <Badge>{pct}%</Badge>
+        <div className="flex items-center gap-2">
+          <Badge>{pct}%</Badge>
+          {sessions.length > 0 && <button onClick={handleReset} className="text-[10px] px-2 py-1 rounded bg-gray-700/60 hover:bg-gray-600 text-gray-200">Reset</button>}
+        </div>
       </div>
       <div className="h-1.5 w-full bg-gray-700/40 rounded overflow-hidden">
-        <div className="h-full bg-gradient-to-r from-emerald-400 to-sky-400 transition-all" style={{ width: pct+'%' }} />
+        <div className="h-full bg-gradient-to-r from-emerald-400 to-sky-400 transition-all" style={{ width: pct + '%' }} />
       </div>
       <ul className="space-y-2">
         {sessions.map(s => {
-          const inProgress = s.status === 'in-progress';
-          const done = s.status === 'done';
+          const elapsed = displayElapsed(s);
+          const progressPct = Math.min(100, (elapsed / s.plannedMinutes) * 100);
+          const statusColor = s.status === 'done' ? 'text-emerald-400' : s.status === 'in-progress' ? 'text-sky-400' : 'text-gray-300';
+          const label = s.status === 'done' ? 'Done' : s.status === 'in-progress' ? 'Stop' : 'Start';
           return (
             <li key={s.id} className="p-3 rounded-lg bg-black/40 border border-white/5 backdrop-blur-sm">
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={done}
-                    onChange={() => done ? updateStudySession(s.id,{ status:'pending', completedMinutes:0, startedAt:undefined, finishedAt:undefined }) : completeStudySession(s.id)}
-                    className="h-4 w-4 rounded border-gray-500 text-emerald-500 focus:ring-emerald-400"
-                  />
-                  <span className={`text-sm ${done ? 'line-through text-gray-500' : 'text-gray-100'}`}>{s.name}</span>
+                  <button
+                    onClick={() => handleToggle(s)}
+                    className={`px-2 py-0.5 rounded text-[11px] font-medium ${s.status==='pending'?'bg-blue-600 hover:bg-blue-700 text-white': s.status==='in-progress'?'bg-amber-600 hover:bg-amber-700 text-white':'bg-emerald-600 hover:bg-emerald-700 text-white'}`}
+                  >{label}</button>
+                  <span className={`text-sm ${s.status === 'done' ? 'line-through text-gray-500' : 'text-gray-100'}`}>{s.name}</span>
                 </div>
                 <div className="flex items-center gap-2 text-[11px] text-gray-400">
-                  <span>{s.completedMinutes}/{s.plannedMinutes}m</span>
-                  {!done && !inProgress && (
-                    <button onClick={()=> startStudySession(s.id)} className="px-2 py-0.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-[11px]">Start</button>
-                  )}
-                  {inProgress && (
-                    <button onClick={()=> completeStudySession(s.id)} className="px-2 py-0.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-[11px]">Done</button>
-                  )}
-                  {!done && (
+                  <span className={statusColor}>{elapsed}/{s.plannedMinutes}m</span>
+                  {s.status !== 'done' && (
                     <input
                       type="number"
                       min={0}
                       max={s.plannedMinutes}
                       value={s.completedMinutes}
-                      onChange={e=> handleManualMinutes(s.id, e.target.value)}
+                      onChange={e => handleManualMinutes(s.id, e.target.value)}
                       className="w-14 px-1 py-0.5 rounded bg-gray-900 border border-gray-600 text-[11px] text-gray-200"
                     />
                   )}
-                  {done && <span className="text-emerald-400">✔</span>}
                 </div>
               </div>
               <div className="mt-2 h-1 w-full bg-gray-700/40 rounded overflow-hidden">
-                <div className="h-full bg-emerald-400/70" style={{ width: Math.min(100, (s.completedMinutes / s.plannedMinutes)*100) + '%' }} />
+                <div className={`h-full ${s.status==='done'?'bg-emerald-400':'bg-emerald-400/70'}`} style={{ width: progressPct + '%' }} />
               </div>
-              {inProgress && <div className="mt-1 text-[10px] text-sky-400">In progress… mark Done when finished.</div>}
+              {s.status === 'in-progress' && <div className="mt-1 text-[10px] text-sky-400">Tracking… updates every minute.</div>}
             </li>
           );
         })}
       </ul>
-      {!sessions.length && <p className="text-xs text-gray-500">No sessions generated.</p>}
-      <p className="text-[10px] text-gray-500">Adjust minutes manually if you under/over-shoot planned time.</p>
+      {sessions.length === 0 && <p className="text-xs text-gray-500">No sessions yet (adjust minutes above to generate plan).</p>}
+      <p className="text-[10px] text-gray-500">Start → timer runs. Stop marks as done. Reset clears sessions for this plan.</p>
     </div>
   );
 }
