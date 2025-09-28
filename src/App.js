@@ -61,10 +61,35 @@ export default function App() {
         <div className="max-w-6xl mx-auto flex items-center justify-between">
         <div>
           <div style={{display:'flex', alignItems:'center', gap:12}}>
-            <div className="logo-badge"><img src="/placeholder-logo.svg" alt="logo" style={{width:34,height:34}}/></div>
+            <div className="logo-badge" style={{
+              background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', 
+              borderRadius: '12px', 
+              padding: '10px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+            }}>
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* Connected nodes representing learning network */}
+                <circle cx="8" cy="8" r="2.5" fill="white" opacity="0.9"/>
+                <circle cx="16" cy="8" r="2.5" fill="white" opacity="0.9"/>
+                <circle cx="12" cy="16" r="2.5" fill="white" opacity="0.9"/>
+                {/* Connection lines */}
+                <line x1="8" y1="8" x2="16" y2="8" stroke="white" strokeWidth="2" opacity="0.7"/>
+                <line x1="8" y1="8" x2="12" y2="16" stroke="white" strokeWidth="2" opacity="0.7"/>
+                <line x1="16" y1="8" x2="12" y2="16" stroke="white" strokeWidth="2" opacity="0.7"/>
+                {/* Small sparkle for knowledge/learning */}
+                <path d="M12 4 L12.5 5.5 L14 6 L12.5 6.5 L12 8 L11.5 6.5 L10 6 L11.5 5.5 Z" fill="white" opacity="0.8"/>
+                {/* Additional connection dots */}
+                <circle cx="4" cy="12" r="1.5" fill="white" opacity="0.6"/>
+                <circle cx="20" cy="12" r="1.5" fill="white" opacity="0.6"/>
+                <line x1="8" y1="8" x2="4" y2="12" stroke="white" strokeWidth="1.5" opacity="0.5"/>
+                <line x1="16" y1="8" x2="20" y2="12" stroke="white" strokeWidth="1.5" opacity="0.5"/>
+              </svg>
+            </div>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold brand-title">Connect and Learn</h1>
-              <p className="brand-sub">Cosmic knowledge exploration platform</p>
             </div>
           </div>
         </div>
@@ -103,7 +128,7 @@ export default function App() {
             </Card>
           )}
           <Card
-            title="🗓️ Today’s Plan"
+            title="Today’s Plan"
             right={
               <div className="flex items-center gap-2">
                 <select
@@ -260,11 +285,11 @@ export default function App() {
 
           
 
-          <Card title="🤝 Peer Insights (Prototype)">
+          <Card title="Peer Insights (Prototype)">
             <PeerInsights studentId={selectedStudent} students={students} enrollments={enrollments} />
           </Card>
 
-          <Card title="� Course Load Breakdown" className="right-card center">
+          <Card title=" Course Load Breakdown" className="right-card center">
             {selectedStudent ? (
               <CoursePie
                 studentId={selectedStudent}
@@ -282,7 +307,7 @@ export default function App() {
             </p>
           </Card>
 
-          <Card title="�📘 Enrolled Courses">
+          <Card title=" Enrolled Courses">
             <ul className="space-y-2">
               {enrolled.map((c) => (
                 <li key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-[rgba(255,255,255,0.01)] border border-[rgba(255,255,255,0.02)]">
