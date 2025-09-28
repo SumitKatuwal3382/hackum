@@ -223,6 +223,9 @@ export default function App() {
                 </div>
               );
             })}
+          <Card title="🧮 AI Study Planner" className="mt-6">
+            <AIPlanner studentId={selectedStudent} weaknesses={weaknesses.filter(w=> w.student_id === selectedStudent)} concepts={concepts} />
+          </Card>
           </Card>
 
           {/* Graph neighborhood removed — using Knowledge Universe (3D planets) instead */}
@@ -293,9 +296,6 @@ export default function App() {
           </Card>
 
           
-          <Card title="🧮 AI Study Planner">
-            <AIPlanner weaknesses={weaknesses.filter(w=> w.student_id === selectedStudent)} concepts={concepts} />
-          </Card>
 
           <Card title="💡 Gemini Suggestion">
             <StudySuggestion

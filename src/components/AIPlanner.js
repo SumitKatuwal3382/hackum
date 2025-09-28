@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { planStudy } from '../ml/studyPlanner';
 import Badge from './Badge';
+import StudyChecklist from './StudyChecklist';
 
-export default function AIPlanner({ weaknesses, concepts }){
+export default function AIPlanner({ weaknesses, concepts, studentId }){
   const [minutes, setMinutes] = useState(120);
   const [slice, setSlice] = useState(15);
   const weakConcepts = useMemo(()=> weaknesses.map(w => ({
@@ -40,6 +41,11 @@ export default function AIPlanner({ weaknesses, concepts }){
           </li>
         ))}
       </ul>
+      {studentId && plan.allocations.length > 0 && (
+        <div className="pt-4 border-t border-white/5">
+          <StudyChecklist studentId={studentId} allocations={plan.allocations} />
+        </div>
+      )}
       <p className="text-[11px] text-gray-500 leading-snug">Planner uses a greedy heuristic maximizing marginal mastery gain per 15-minute slice. Tune slice size for more granularity.</p>
     </div>
   );
