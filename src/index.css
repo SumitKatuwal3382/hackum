@@ -94,10 +94,11 @@ code {
 /* small pill helpers */
 .pill { display:inline-block; padding:6px 10px; border-radius:999px; background: rgba(255,255,255,0.02); color:#cfe7ff; font-weight:700; font-size:12px; border:1px solid rgba(255,255,255,0.03); }
 .pill-muted { background: rgba(255,255,255,0.01); color:#9aa6b2; border:1px solid rgba(255,255,255,0.02); }
+/* Updated fit grade colors: A=green, B=yellow, C=red (text only) */
 .pill-fit { background: rgba(255,255,255,0.02); color: #cfe7ff; border:1px solid rgba(255,255,255,0.03); }
-.fit-A{ background: linear-gradient(180deg,#e6fff0,#d6ffea); color:#0b6b4b; border:1px solid rgba(20,180,100,0.12); }
-.fit-B{ background: linear-gradient(180deg,#fff6dc,#fff0bf); color:#6b510b; border:1px solid rgba(200,150,30,0.12); }
-.fit-C{ background: linear-gradient(180deg,#ffdede,#ffd0d0); color:#6b1b1b; border:1px solid rgba(200,60,60,0.1); }
+.fit-A{ color:#22c55e !important; }
+.fit-B{ color:#eab308 !important; }
+.fit-C{ color:#ef4444 !important; }
 .fit-letter{ display:inline-block; margin-left:8px; padding:4px 6px; border-radius:6px; font-weight:800; font-size:12px; background: rgba(255,255,255,0.06); color: inherit }
 .pill-star { background: linear-gradient(180deg,#2a1f06,#402b09); color: #ffd24a; border-radius:999px; padding:6px 8px; font-weight:700; box-shadow: inset 0 -2px 6px rgba(0,0,0,0.4); }
 .pill-target { background: transparent; color: #9ed7ff; border: 0; font-weight:700; }
@@ -254,23 +255,14 @@ code {
 .res-hover-popup .fit { background: linear-gradient(180deg, rgba(14,165,233,0.06), rgba(6,78,130,0.06)); color:#9ed7ff; border:1px solid rgba(14,165,233,0.08) }
 .res-hover-popup .rating { background: linear-gradient(180deg,#b07f05,#60400a); color: #ffd24a; box-shadow: inset 0 -3px 6px rgba(0,0,0,0.45); padding:6px 12px }
 
-/* stronger specificity for Fit pill variants so they fully color the pill (capsule) */
+/* stronger specificity for Fit pill variants - text color only */
 .pill-fit.fit-A {
-  background: linear-gradient(180deg,#e6fff0,#c8f8d6);
-  color: #033e28;
-  border: 1px solid rgba(10,140,70,0.14);
-  box-shadow: inset 0 -3px 8px rgba(0,0,0,0.28);
+  color: #22c55e !important;
 }
 .pill-fit.fit-B {
-  background: linear-gradient(180deg,#fff6dc,#ffeaa8);
-  color: #6b510b;
-  border: 1px solid rgba(170,130,30,0.12);
-  box-shadow: inset 0 -3px 8px rgba(0,0,0,0.22);
+  color: #eab308 !important;
 }
 .pill-fit.fit-C {
-  background: linear-gradient(180deg,#ffdede,#ffbdbd);
-  color: #5f1414;
-  border: 1px solid rgba(200,60,60,0.14);
-  box-shadow: inset 0 -3px 8px rgba(0,0,0,0.22);
+  color: #ef4444 !important;
 }
 
